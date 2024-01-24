@@ -1,0 +1,37 @@
+import pandas as pd
+from googleapiclient.discovery import build
+import tldextract
+import time
+import random
+
+# Replace 'YOUR_API_KEY' and 'YOUR_CSE_ID' with your actual API key and Custom Search Engine ID
+API_KEY = 'AIzaSyBr9QLozlQIxnr-EXhlWNpJ3FUQ13aaais'
+CSE_ID = '15fb0bebb0e07433b'
+
+# Load the Excel file into a DataFrame
+file_path = 'data.xlsx'
+df = pd.read_excel(file_path)
+
+# Function to extract domain using business name
+def extract_domain(business_name):
+    try:
+        service = build("customsearch", "v1", developerKey=API_KEY)
+        query = f"{business_name}"  # Adjust the query as needed
+        result = service.cse().list(q=query, cx=CSE_ID, num=1).execute()
+        items = result.get('items', [])
+        if items:
+            link = items[0].get('link', '')
+            domain_info = tldextract.extract(link)
+            return f"{domain_info.domain}.{domain_info.suffix}"
+    except Exception as e:
+        print(f"Error occurred while extracting domain for {business_name}: {e}")
+    return None
+
+# Apply the function to the 'Business Name' column and create a new 'Domain' column
+df['Domain'] = df['Business Name'].apply(extract_domain)
+
+# Save the updated DataFrame to a new Excel file
+output_file_path = 'data_with_domains.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print(f"Domain names added and saved to {output_file_path}")

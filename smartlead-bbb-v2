@@ -1,0 +1,54 @@
+import re
+import json
+import requests
+import pandas as pd
+
+# Set user agent in headers to mimic a real browser request
+headers = {'User-Agent': 'Mozilla/5.0'}
+
+# Create a session for making requests
+session = requests.Session()
+
+# Define the base URL with parameters that do not change
+base_url = 'https://www.bbb.org/search?find_country=USA&find_entity=10113-000&find_id=322_10113-000_alias&find_latlng=47.677998%2C-117.397559&find_loc=Spokane%2C%20WA&find_text=plumbing&find_type=Category&page={}'
+
+# Initialize an empty list to store results
+all_results = []
+
+# Iterate over pages
+for page_number in range(1, 10):  # Adjust the range as needed
+    # Create the URL for the current page
+    current_url = base_url.format(page_number)
+
+    # Send a GET request to the BBB search page
+    r = session.get(current_url, headers=headers)
+
+    # Use regular expression to extract data in JSON format from the response
+    p = re.compile(r'window\.__PRELOADED_STATE__ = (.*?);</script>', re.DOTALL)
+    match = p.search(r.text)
+
+    if match:
+        data = json.loads(match.group(1))
+
+        # Extract relevant information from the JSON data
+        results = [
+            (
+                item['businessName'],
+                ' '.join([item['address'], item['city'], item['state'], item['postalcode']]),
+                item['phone']
+            ) for item in data['searchResult']['results']
+        ]
+
+        # Add results to the list
+        all_results.extend(results)
+    else:
+        print(f"JSON data not found on page {page_number}.")
+
+# Create a DataFrame from all results
+df = pd.DataFrame(all_results, columns=['Business Name', 'Address', 'Phone'])
+
+# Print the DataFrame
+print(df)
+
+# Save the DataFrame to an Excel file
+df.to_excel('data.xlsx', index=False)
