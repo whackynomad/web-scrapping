@@ -5,8 +5,8 @@ import time
 import random
 
 # Replace 'YOUR_API_KEY' and 'YOUR_CSE_ID' with your actual API key and Custom Search Engine ID
-API_KEY = 'AIzaSyBr9QLozlQIxnr-EXhlWNpJ3FUQ13aaais'
-CSE_ID = '15fb0bebb0e07433b'
+API_KEY = 'My-API-KEY'
+CSE_ID = 'My-CSE-KEY'
 
 # Load the Excel file into a DataFrame
 file_path = 'data.xlsx'
